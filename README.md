@@ -17,7 +17,7 @@ Written in Python 3.8 to maintain compatibility with older versions of Ubuntu.
 - Cd into the project: `cd tangoctl`
 - Create a virtual environment: `python3 -m venv venv`
 - Activate the virtual environment: `source venv/bin/activate`
-- Install the requirements: `pip install -r requements.txt`
+- Install the requirements: `pip install -r requirements.txt`
 - Optionally, "install" this tool with `sudo bash install.sh` from the `tangoctl` directory.
     - This will allow you to run `tangoctl` from anywhere by dynamically generating `tangoctl_installed.py` using the
       venv's executable path and creating a symlink in /usr/local/bin.
