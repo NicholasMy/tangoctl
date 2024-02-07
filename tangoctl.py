@@ -80,7 +80,7 @@ def build_docker_image_from_dockerfile(dockerfile: str, image_name: str) -> str:
     image_name_timestamp: str = f"{image_name}:{timestamp_tag}"
     image_name_latest: str = f"{image_name}:latest"
     # Build and tag with timestamp
-    subprocess.run(["docker", "build", "-t", image_name_timestamp, dockerfile])
+    subprocess.run(["docker", "build", "-t", image_name_timestamp, "--no-cache", dockerfile])
     # Tag as latest
     subprocess.run(["docker", "tag", image_name_timestamp, image_name_latest])
     return image_name_latest
