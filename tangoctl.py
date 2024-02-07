@@ -2,7 +2,7 @@ import argparse
 import subprocess
 from datetime import datetime
 from functools import lru_cache
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import yaml
 from models import Config, TangoNode
 
@@ -70,8 +70,9 @@ def get_date_time_stamp() -> str:
     return datetime.now().strftime("%Y.%m.%d.%H%M%S")
 
 
-def build_docker_image_from_dockerfile(dockerfile: str, image_name: str) -> str:
-    # Build a Docker image locally and name it, returns the image name with the latest tag
+def build_docker_image_from_dockerfile(dockerfile: str, image_name: str) -> Tuple[str, str]:
+    # Build a Docker image locally and name it
+    # Returns a tuple containing the image name with the latest tag and the image name with the datestamp tag
     # `dockerfile` can be a path to a local directory containing a Dockerfile or a URL to a Dockerfile
     # `image_name` should be formatted like `org/name` and NOT include a tag
     assert ":" not in image_name, "image_name should not include a tag"
@@ -83,7 +84,7 @@ def build_docker_image_from_dockerfile(dockerfile: str, image_name: str) -> str:
     subprocess.run(["docker", "build", "-t", image_name_timestamp, "--no-cache", dockerfile])
     # Tag as latest
     subprocess.run(["docker", "tag", image_name_timestamp, image_name_latest])
-    return image_name_latest
+    return image_name_latest, image_name_timestamp
 
 
 def push_docker_image(image_name: str):
@@ -114,8 +115,8 @@ def deploy_docker_image(image_name: str, tango_node: TangoNode):
     print(f"Finished deploying image {image_name} to {tango_node.fqdn}")
 
 
-def build(args: argparse.Namespace) -> str:
-    # Build a Docker image locally and return the image name with the latest tag
+def build(args: argparse.Namespace) -> Tuple[str, str]:
+    # Build a Docker image locally and return both image names: latest and datestamp
     org: str = get_config().docker_hub_org
     image_name: str = f"{org}/{args.image_name}"
     assert "/" not in args.image_name, ("image_name, as an argument, should not include a slash "
@@ -133,7 +134,10 @@ def deploy(args: argparse.Namespace):
 
 def aio(args: argparse.Namespace):
     # All-in-one: Build, push, and deploy a Docker image to all Tango nodes
-    image_name_latest: str = build(args)
+    image_name_latest: str
+    image_name_datestamp: str
+    image_name_latest, image_name_datestamp = build(args)
+    push_docker_image(image_name_datestamp)
     push_docker_image(image_name_latest)
     target_nodes = list(get_config().tango_nodes.values())
     for node in target_nodes:
