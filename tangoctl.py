@@ -42,6 +42,9 @@ def parse_args_to_config() -> argparse.Namespace:
     aio_parser.add_argument("image_name", type=str, help="Name of the Docker image to build and deploy, "
                                                          "without an org or tag")
 
+    images_parser = sub_parsers.add_parser("images", help="Retrieve the Docker images available to each Tango node")
+    volumes_parser = sub_parsers.add_parser("volumes", help="Show the current storage volumes on each Docker node")
+
     args = parser.parse_args()
     if args.org:
         config.docker_hub_org = args.org
@@ -99,7 +102,7 @@ def run_command_on_tango_node(command: str, tango_node: TangoNode):
     ssh_user_host: str = f"{ssh_username}@{tango_node.fqdn}"
 
     proc = subprocess.run(
-        ["ssh", "-o", "IdentitiesOnly=yes", "-i", ssh_key_path, ssh_user_host, command])
+        ["ssh", "-4", "-o", "IdentitiesOnly=yes", "-i", ssh_key_path, ssh_user_host, command])
     if proc.returncode != 0:
         raise Exception(f"Command failed on {tango_node.fqdn}: {command}. Status code: {proc.returncode}")
 
@@ -144,6 +147,25 @@ def aio(args: argparse.Namespace):
         deploy_docker_image(image_name_latest, node)
 
 
+def images(args: argparse.Namespace):
+    # View which Docker images are available on each node
+    target_nodes = list(get_config().tango_nodes.values())
+    for node in target_nodes:
+        print(f"Docker images on {node.fqdn}:")
+        run_command_on_tango_node(f"docker images", node)
+        print()
+
+
+def volumes(args: argparse.Namespace):
+    # View the storage status on all Tango nodes
+    target_nodes = list(get_config().tango_nodes.values())
+    for node in target_nodes:
+        volumes_path: str = node.volumes_path if node.volumes_path else get_config().volumes_path
+        print(f"Volumes on {node.fqdn}:")
+        run_command_on_tango_node(f"ls -l {volumes_path}; find {volumes_path}", node)
+        print()
+
+
 def main():
     get_config()  # Cache the initial config
     args = parse_args_to_config()
@@ -152,6 +174,8 @@ def main():
         "build": build,
         "deploy": deploy,
         "aio": aio,
+        "images": images,
+        "volumes": volumes,
     }
 
     commands[args.command](args)

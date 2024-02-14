@@ -1,6 +1,7 @@
 docker_hub_org: "my_org"
 ssh_key_path: "/path/to/id_rsa"
 ssh_username: tango_client_username
+volumes_path: /path/to/volumes/
 tango_nodes:
   something:
     fqdn: something.cse.buffalo.edu
@@ -8,3 +9,4 @@ tango_nodes:
     ssh_username: different_username
   something-else:
 	fqdn: something-else.cse.buffalo.edu
+	volumes_path: /different/path/volumes/

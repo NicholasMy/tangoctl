@@ -97,3 +97,15 @@ Just like `build`:
 
 Because this pushes to Docker Hub, it requires being logged in. Use `docker login` and `docker logout` to manage your
 authentication.
+
+### View Docker images
+
+`tangoctl [config_overrides] images`
+
+Display which Docker images are installed on each Tango node.
+
+### View Docker volumes
+
+`tangoctl [config_overrides] volumes`
+
+Display the contents of the Tango volumes directory on each Tango node.
